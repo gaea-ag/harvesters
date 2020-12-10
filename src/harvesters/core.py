@@ -1298,6 +1298,40 @@ class Buffer:
         return payload
 
 
+class RawBuffer(Buffer):
+    def __init__(
+            self, *,
+            buffer=None, node_map: Optional[NodeMap] = None,
+            logger: Optional[Logger] = None):
+        """
+        :param buffer:
+        :param node_map:
+        :param logger:
+        """
+
+        #
+        assert buffer
+        assert node_map
+
+        #
+        self._logger = logger or get_logger(name=__name__)
+
+        super(Buffer, self).__init__()
+
+        #
+        self._buffer = buffer
+        self._node_map = node_map
+
+    def __repr__(self):
+        return '{0}'.format(self._buffer.__repr__())
+
+    def payload(self):
+        NotImplemented
+
+    def _build_payload(self, *args, **kwargs):
+        NotImplemented
+
+
 class PayloadBase:
     """
     Is a base class of various payload types. The types are defined by the
@@ -2747,7 +2781,13 @@ class ImageAcquirer:
             self._update_statistics(_buffer)
 
             #
-            if not is_raw:
+            if is_raw:
+                _buffer = RawBuffer(
+                    buffer=_buffer,
+                    node_map=self.remote_device.node_map,
+                    logger=self._logger
+                )
+            else:
                 _buffer = Buffer(
                     buffer=_buffer,
                     node_map=self.remote_device.node_map,
